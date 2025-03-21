@@ -119,6 +119,197 @@ class TestTextNode(unittest.TestCase):
         text = "This is just text"
         matches = extract_markdown_images(text)
         self.assertEqual([], matches)
+    def test_split_image_one_node(self):
+        node = TextNode("Here is one ![image](www.image.com) and ![other image](www.otherimage.com) for you.", TextType.TEXT)
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("Here is one ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "www.image.com"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("other image", TextType.IMAGE, "www.otherimage.com"),
+                TextNode(" for you.", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_split_link_one_node(self):
+        node = TextNode("Here is one [image](www.image.com) and [other image](www.otherimage.com) for you.", TextType.TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("Here is one ", TextType.TEXT),
+                TextNode("image", TextType.LINK, "www.image.com"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("other image", TextType.LINK, "www.otherimage.com"),
+                TextNode(" for you.", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_split_image_multiple_nodes(self):
+        nodes = [
+            TextNode("Here is one ![image](www.image.com) and ![other image](www.otherimage.com) for you.", TextType.TEXT),
+            TextNode("Text ![alt](link) and ![alt2](link2) here", TextType.TEXT)
+        ]
+        new_nodes = split_nodes_image(nodes)
+        self.assertListEqual(
+            [
+                TextNode("Here is one ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "www.image.com"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("other image", TextType.IMAGE, "www.otherimage.com"),
+                TextNode(" for you.", TextType.TEXT),
+                TextNode("Text ", TextType.TEXT),
+                TextNode("alt", TextType.IMAGE, "link"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("alt2", TextType.IMAGE, "link2"),
+                TextNode(" here", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_split_link_multiple_nodes(self):
+        nodes = [
+            TextNode("Here is one [image](www.image.com) and [other image](www.otherimage.com) for you.", TextType.TEXT),
+            TextNode("Text [alt](link) and [alt2](link2) here", TextType.TEXT)
+        ]
+        new_nodes = split_nodes_link(nodes)
+        self.assertListEqual(
+            [
+                TextNode("Here is one ", TextType.TEXT),
+                TextNode("image", TextType.LINK, "www.image.com"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("other image", TextType.LINK, "www.otherimage.com"),
+                TextNode(" for you.", TextType.TEXT),
+                TextNode("Text ", TextType.TEXT),
+                TextNode("alt", TextType.LINK, "link"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("alt2", TextType.LINK, "link2"),
+                TextNode(" here", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_empty_nodes_image_split(self):
+        nodes = [
+            TextNode("![image](link) and ![image2](link2)", TextType.TEXT),
+            TextNode("![image3](link)", TextType.TEXT)
+        ]
+        new_nodes = split_nodes_image(nodes)
+        self.assertListEqual(
+            [
+                TextNode("image", TextType.IMAGE, "link"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("image2", TextType.IMAGE, "link2"),
+                TextNode("image3", TextType.IMAGE, "link")
+            ],
+            new_nodes
+        )
+    def test_empty_nodes_link_split(self):
+        nodes = [
+            TextNode("[image](link) and [image2](link2)", TextType.TEXT),
+            TextNode("[image3](link)", TextType.TEXT)
+        ]
+        new_nodes = split_nodes_link(nodes)
+        self.assertListEqual(
+            [
+                TextNode("image", TextType.LINK, "link"),
+                TextNode(" and ", TextType.TEXT),
+                TextNode("image2", TextType.LINK, "link2"),
+                TextNode("image3", TextType.LINK, "link")
+            ],
+            new_nodes
+        )
+    def test_no_image_image_split(self):
+        nodes = [
+            TextNode("Hello there!", TextType.TEXT),
+            TextNode("Hello there, ![image](link)", TextType.TEXT),
+            TextNode("Goodbye!", TextType.TEXT)
+            ]
+        new_nodes = split_nodes_image(nodes)
+        self.assertListEqual(
+            [
+                TextNode("Hello there!", TextType.TEXT),
+                TextNode("Hello there, ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "link"),
+                TextNode("Goodbye!", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_no_link_link_split(self):
+        nodes = [
+            TextNode("Hello there!", TextType.TEXT),
+            TextNode("Hello there, [image](link)", TextType.TEXT),
+            TextNode("Goodbye!", TextType.TEXT)
+            ]
+        new_nodes = split_nodes_link(nodes)
+        self.assertListEqual(
+            [
+                TextNode("Hello there!", TextType.TEXT),
+                TextNode("Hello there, ", TextType.TEXT),
+                TextNode("image", TextType.LINK, "link"),
+                TextNode("Goodbye!", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def text_text_to_textnodes(self):
+        text = "This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)"
+        new_nodes = text_to_textnodes(text)
+        assertListEqual(
+            [
+                TextNode("This is ", TextType.TEXT),
+                TextNode("text", TextType.BOLD),
+                TextNode(" with an ", TextType.TEXT),
+                TextNode("italic", TextType.ITALIC),
+                TextNode(" word and a ", TextType.TEXT),
+                TextNode("code block", TextType.CODE),
+                TextNode(" and an ", TextType.TEXT),
+                TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+                TextNode(" and a ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "https://boot.dev")
+            ],
+            new_nodes
+        )
+    def test_text_to_textnodes_different_order(self):
+        text = "_start_ with ital, then ![image](image link), **bold**, then [link](url), finally `code`."
+        new_nodes = text_to_textnodes(text)
+        self.assertListEqual(
+            [
+                TextNode("start", TextType.ITALIC),
+                TextNode(" with ital, then ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "image link"),
+                TextNode(", ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(", then ", TextType.TEXT),
+                TextNode("link", TextType.LINK, "url"),
+                TextNode(", finally ", TextType.TEXT),
+                TextNode("code", TextType.CODE),
+                TextNode(".", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_text_to_textnodes_repeats(self):
+        text = "**bold** normal _ital_ ![img](link) ![img2](link2) **bold** _ital_ normal"
+        new_nodes = text_to_textnodes(text)
+        self.assertListEqual(
+            [
+                TextNode("bold", TextType.BOLD),
+                TextNode(" normal ", TextType.TEXT),
+                TextNode("ital", TextType.ITALIC),
+                TextNode(" ", TextType.TEXT),
+                TextNode("img", TextType.IMAGE, "link"),
+                TextNode(" ", TextType.TEXT),
+                TextNode("img2", TextType.IMAGE, "link2"),
+                TextNode(" ", TextType.TEXT),
+                TextNode("bold", TextType.BOLD),
+                TextNode(" ", TextType.TEXT),
+                TextNode("ital", TextType.ITALIC),
+                TextNode(" normal", TextType.TEXT)
+            ],
+            new_nodes
+        )
+    def test_text_to_textnode_no_split(self):
+        text = "Hello, world! No special stuff here!"
+        nodes = text_to_textnodes(text)
+        self.assertListEqual([TextNode(text, TextType.TEXT)], nodes)
+
 
 #if __name__ == "__main__":
     #unittest.main()                These two lines are only necessary when you want to run just this specific file, not when using ./test.sh

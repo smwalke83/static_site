@@ -32,8 +32,6 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode("tag", "value", children1, props1)
         node2 = HTMLNode("tag", "value", children1, props1)
         node3 = HTMLNode("tag", "value", children1, props2)
-        print(f"Node Properties: {node.props_to_html()}")
-        print(f"Node Properties: {node3.props_to_html()}")
         self.assertEqual(node, node2)
         self.assertNotEqual(node, node3)
     def test_leaf_to_html_p(self):
