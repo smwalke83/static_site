@@ -99,7 +99,26 @@ class TestTextNode(unittest.TestCase):
         bold_and_code = split_nodes_delimiter(bold_nodes, "`", TextType.CODE)
         new_nodes = split_nodes_delimiter(bold_and_code, "_", TextType.ITALIC)
         self.assertEqual(new_nodes, expected_new_nodes)
-
+    def test_extract_markdown_images(self):
+        text = "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        matches = extract_markdown_images(text)
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+    def test_extract_markdown_links(self):
+        text = "This is text with a link [to link](www.link.com)"
+        matches = extract_markdown_links(text)
+        self.assertEqual([("to link", "www.link.com")], matches)
+    def test_multiple_images(self):
+        text = "This is text with ![this image](www.thisimage.com) and ![that image](www.thatimage.com)"
+        matches = extract_markdown_images(text)
+        self.assertEqual([("this image", "www.thisimage.com"), ("that image", "www.thatimage.com")], matches)
+    def test_multiple_links(self):
+        text = "This has a link [to link](www.link.com) and another link [to other link](www.otherlink.com)"
+        matches = extract_markdown_links(text)
+        self.assertEqual([("to link", "www.link.com"), ("to other link", "www.otherlink.com")], matches)
+    def test_no_tags(self):
+        text = "This is just text"
+        matches = extract_markdown_images(text)
+        self.assertEqual([], matches)
 
 #if __name__ == "__main__":
     #unittest.main()                These two lines are only necessary when you want to run just this specific file, not when using ./test.sh
