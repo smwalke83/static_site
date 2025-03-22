@@ -309,6 +309,29 @@ class TestTextNode(unittest.TestCase):
         text = "Hello, world! No special stuff here!"
         nodes = text_to_textnodes(text)
         self.assertListEqual([TextNode(text, TextType.TEXT)], nodes)
+    def test_markdown_to_blocks(self):
+        markdown = """
+# Here's the heading.
+
+This is a **bold** paragraph.
+
+This is a paragraph with _ital_ and `code`.
+This is the same paragraph, new line.
+
+- I am a list.
+- I am part two of the list.
+- List part 3.
+"""
+        blocks = markdown_to_blocks(markdown)
+        self.assertEqual(
+            [
+                "# Here's the heading.",
+                "This is a **bold** paragraph.",
+                "This is a paragraph with _ital_ and `code`.\nThis is the same paragraph, new line.",
+                "- I am a list.\n- I am part two of the list.\n- List part 3."
+            ],
+            blocks
+        )
 
 
 #if __name__ == "__main__":
