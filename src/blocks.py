@@ -9,18 +9,30 @@ class BlockType(Enum):
     ORDERED_LIST = "ordered_list"
 
 def block_to_block_type(block):
+    lines = block.split("\n")
     if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
         return BlockType.HEADING
-    elif block[0] + block[1] + block[2] == "```" and block[len(block) - 1] + block[len(block) - 2] + block[len(block) - 3] == "```":
+    elif block.startswith("```") and block.endswith("```"):
         return BlockType.CODE
-    elif block[0] == ">":
+    elif block.startswith(">"):
+        for line in lines:
+            if not line.startswith(">"):
+                return BlockType.PARAGRAPH
         return BlockType.QUOTE
-    elif block[0] == "-" and block[1] == " ":
+    elif block.startswith("- "):
+        for line in lines:
+            if not line.startswith("- "):
+                return BlockType.PARAGRAPH
         return BlockType.UNORDERED_LIST
-    elif block[0] == "1" and block[1] == "." and block[2] == " ":
+    elif block.startswith("1. "):
+        i = 1
+        for line in lines:
+            if not line.startswith(f"{i}. "):
+                return BlockType.PARAGRAPH
+            i += 1
         return BlockType.ORDERED_LIST
     else:
         return BlockType.PARAGRAPH
 
-        # need to revisit and split block into lines to check code, quote, and lists
+        # need to revisit and split block into lines to check code, quote, and lists. Use more .startswith() maybe .endswith()?
     
