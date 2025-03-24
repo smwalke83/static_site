@@ -172,66 +172,87 @@ def markdown_to_html_node(markdown):
     block_list = markdown_to_blocks(markdown)
     HTML_node_list = []
     for block in block_list:
-        match block_to_block_type(block):
-            case BlockType.PARAGRAPH:
-                new_block = block.replace("\n", " ")
-                tag = "p"
-                children = text_to_children(new_block)
-                if len(children) == 1:
-                    HTML_node_list.append(LeafNode(tag, children[0].value, children[0].props))
-                else:
-                    HTML_node_list.append(ParentNode(tag, children))
-            case BlockType.HEADING:
-                if block.startswith("# "):
-                    tag = "h1"
-                if block.startswith("## "):
-                    tag = "h2"
-                if block.startswith("### "):
-                    tag = "h3"
-                if block.startswith("#### "):
-                    tag = "h4"
-                if block.startswith("##### "):
-                    tag = "h5"
-                if block.startswith("###### "):
-                    tag = "h6"
-                children = text_to_children(block)
-                if len(children == 1):
-                    HTML_node_list.append(LeafNode(tag, children[0].value, children[0].props))
-                else:
-                    HTML_node_list.append(ParentNode(tag, children))
-            case BlockType.QUOTE:
-                tag = "blockquote"
-                children = text_to_children(block)
-                if len(children == 1):
-                    HTML_node_list.append(LeafNode(tag, children[0].value, children[0].props))
-                else:
-                    HTML_node_list.append(ParentNode(tag, children))
-            case BlockType.UNORDERED_LIST:
-                tag = "ul"
-                children = text_to_children(block)
-                if len(children == 1):
-                    HTML_node_list.append(LeafNode(tag, children[0].value, children[0].props))
-                else:
-                    HTML_node_list.append(ParentNode(tag, children))
-            case BlockType.ORDERED_LIST:
-                tag = "ol"
-                children = text_to_children(block)
-                if len(children == 1):
-                    HTML_node_list.append(LeafNode(tag, children[0].value, children[0].props))
-                else:
-                    HTML_node_list.append(ParentNode(tag, children))
-            case BlockType.CODE:
-                tag = "pre"
-                text_nodes = text_to_textnodes(block)
-                HTML_node = text_node_to_html_node(text_nodes[0])
-                HTML_node_list.append(ParentNode(tag, HTML_node))
+        HTML_node_list.append(block_to_html_node(block))
     return ParentNode("div", HTML_node_list)
-                
-'''
-Things still to implement: Replace line breaks in lists (within single list items) with space, replace line breaks within block quotes with spaces.
-Code blocks maintain their line breaks.
-Unordered lists get the <ul> tag, but each list item needs the <li> tag. Same for Ordered Lists.
-Code blocks need a <pre> tag and then a <code> tag (wrote test function, getting "no closing delimiter" error)
-'''          
+
+def block_to_html_node(block):
+    block_type = block_to_block_type(block)
+    match block_type:
+        case BlockType.PARAGRAPH:
+            return paragraph_to_html_node(block)
+        case BlockType.HEADING:
+            return heading_to_html_node(block)
+        case BlockType.CODE:
+            return code_to_html_node(block)
+        case BlockType.ORDERED_LIST:
+            return olist_to_html_node(block)
+        case BlockType.UNORDERED_LIST:
+            return ulist_to_html_node(block)
+        case BlockType.QUOTE:
+            return quote_to_html_node(block)
+
+def paragraph_to_html_node(block):
+    tag = "p"
+    paragraph = block.replace("\n", " ")
+    children = text_to_children(paragraph)
+    return ParentNode(tag, children)
+
+def heading_to_html_node(block):
+    if block.startswith("# "):
+        tag = "h1"
+    elif block.startswith("## "):
+        tag = "h2"
+    elif block.startswith("### "):
+        tag = "h3"
+    elif block.startswith("#### "):
+        tag = "h4"
+    elif block.startswith("##### "):
+        tag = "h5"
+    elif block.startswith("###### "):
+        tag = "h6"
+    else:
+        raise ValueError("invalid heading level")
+    children = text_to_children(block.lstrip("#").strip())
+    return ParentNode(tag, children)
+
+def code_to_html_node(block):
+    tag = "pre"
+    code = block.strip("```").strip()
+    node = TextNode(code, TextType.TEXT)
+    leaf_node = text_node_to_html_node(node)
+    code_node = ParentNode("code", [leaf_node])
+    return ParentNode(tag, [code_node])
+
+def olist_to_html_node(block):
+    tag = "ol"
+    list_lines = block.split("\n")
+    nodes = []
+    for line in list_lines:
+        children = text_to_children(line[3:])
+        nodes.append(ParentNode("li", children))
+    return ParentNode(tag, nodes)
+
+def ulist_to_html_node(block):
+    tag = "ul"
+    list_lines = block.split("\n")
+    nodes = []
+    for line in list_lines:
+        children = text_to_children(line[2:])
+        nodes.append(ParentNode("li", children))
+    return ParentNode(tag, nodes)
+
+def quote_to_html_node(block):
+    tag = "blockquote"
+    quote_lines = block.split("\n")
+    new_lines = []
+    for line in quote_lines:
+        if not line.startswith(">"):
+            raise ValueError("invalid quote block")
+        new_lines.append(line.lstrip(">").strip())
+    quote = " ".join(new_lines)
+    children = text_to_children(quote)
+    return ParentNode(tag, children)
+
+     
 
         

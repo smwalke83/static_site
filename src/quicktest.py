@@ -3,13 +3,9 @@ from texttohtml import *
 from htmlnode import *
 from blocks import *
 from textnode import *
+import sys
+import os
 
-md = """
-    This is **bolded** paragraph
-    text in a p
-    tag here
+print(os.listdir("static"))
 
-    This is another paragraph with _italic_ text and `code` here
 
-    """
-print(markdown_to_html_node(md))

@@ -143,8 +143,86 @@ the **same** even with inline stuff
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff</code></pre></div>",
         )
+    def test_ordered_list_block(self):
+        md = """
+1. Item one
+2. The second item
+3. Item 3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>Item one</li><li>The second item</li><li>Item 3</li></ol></div>"
+        )
+    def test_unordered_list_block(self):
+        md = """
+- Item one
+- The second item
+- Item 3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>Item one</li><li>The second item</li><li>Item 3</li></ul></div>"
+        )
+    def test_blockquote(self):
+        md = """
+>This is a quote.
+>This is the second line of the quote.
+>Quote line 3.
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a quote. This is the second line of the quote. Quote line 3.</blockquote></div>"
+        )
+    def test_header_block(self):
+        md = """
+# This is a header 1
 
+## This is a header 2
+
+Paragraph text
+
+### This is a header 3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>This is a header 1</h1><h2>This is a header 2</h2><p>Paragraph text</p><h3>This is a header 3</h3></div>"
+        )
+    def test_multiple_blocks(self):
+        md = """
+# Header
+
+Paragraph
+
+- Unordered list 1
+- ul 2
+- ul 3
+
+Paragraph
+
+```Short **code** block```
+
+1. Ordered list 1
+2. ol 2
+3. ol 3
+
+>Quotes
+>and more quotes
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>Header</h1><p>Paragraph</p><ul><li>Unordered list 1</li><li>ul 2</li><li>ul 3</li></ul><p>Paragraph</p><pre><code>Short **code** block</code></pre><ol><li>Ordered list 1</li><li>ol 2</li><li>ol 3</li></ol><blockquote>Quotes and more quotes</blockquote></div>"
+        )
 #if __name__ == "__main__":
 #    unittest.main()            These two lines are only necessary when you want to run just this specific file, not when using ./test.sh

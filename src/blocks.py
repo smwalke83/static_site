@@ -34,5 +34,5 @@ def block_to_block_type(block):
     else:
         return BlockType.PARAGRAPH
 
-        # need to revisit and split block into lines to check code, quote, and lists. Use more .startswith() maybe .endswith()?
+
     
