@@ -1,0 +1,1 @@
+python3 src/main.py "/https://github.com/smwalke83/static_site/"
