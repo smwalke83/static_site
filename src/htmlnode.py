@@ -13,9 +13,9 @@ class HTMLNode:
         if self.props != None:
             prop_html = " "
             for prop in self.props:
-                prop_html += f'{prop}="{self.props[prop]}" '
+                prop_html += f'{prop}="{self.props[prop]}"'
             return prop_html
-        return None
+        return ""
     def __repr__(self):
         return f"HTMLNode - \nTag: {self.tag} \nValue: {self.value} \nChildren: {self.children} \nProps: {self.props}"
     def __eq__(self, node):
@@ -31,7 +31,7 @@ class LeafNode(HTMLNode):
             raise ValueError("leaf node must have value")
         if self.tag == None:
             return self.value
-        return f"<{self.tag}>{self.value}</{self.tag}>"
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
 
 class ParentNode(HTMLNode):
     def __init__(self, tag, children, props = None):
