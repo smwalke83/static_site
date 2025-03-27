@@ -1,0 +1,1 @@
+Finish organizing functions (done I think, need to compare), change tests accordingly, add headers(import xyz)

@@ -1,8 +1,8 @@
 import unittest
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextNode, TextType
-from splitnodes import *
-from texttohtml import *
+from textmanipfunc import text_node_to_html_node, markdown_to_html_node
+
 
 children1 = [1, 2, 3, 4, 5]
 children2 = [6, 7, 8, 9, 10]
